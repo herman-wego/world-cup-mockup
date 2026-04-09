@@ -1,566 +1,728 @@
-import { useState } from "react";
-import { MapPin, Plane, Hotel, Calendar, Clock, Trophy, ChevronRight, Globe, Shield, Ticket, Users, Star, ArrowRight } from "lucide-react";
 
-// Color constants matching Wego brand
-const COLORS = {
-  wegoGreen: "#5CC64C",
-  darkGreen: "#3A8F2E",
-  navy: "#1A1F36",
-  white: "#FFFFFF",
-  lightGray: "#F5F7FA",
-  medGray: "#E8ECF1",
-  darkText: "#1A1F36",
-  subText: "#6B7280",
-  accent: "#8B1538", // World Cup deep red accent
-  gold: "#D4A843",
-};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIFA World Cup 2026 — Wego</title>
+  <style>
+    /* ── RESET & BASE ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #F5F7FA;
+      color: #1A1F36;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; display: block; }
+    button { cursor: pointer; border: none; font-family: inherit; }
 
-// ─── HERO SECTION ────────────────────────────────────────────
-function HeroSection() {
-  return (
-    <div
-      className="relative overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, ${COLORS.navy} 0%, #2D1B4E 50%, ${COLORS.accent} 100%)`,
-        minHeight: 420,
-      }}
-    >
-      {/* Decorative elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-8 left-12 w-32 h-32 rounded-full border-2 border-white" />
-        <div className="absolute top-20 right-20 w-48 h-48 rounded-full border border-white" />
-        <div className="absolute bottom-12 left-1/3 w-24 h-24 rounded-full border border-white" />
+    /* ── VARIABLES ─────────────────────────────────── */
+    :root {
+      --wego-green: #5CC64C;
+      --dark-green: #3A8F2E;
+      --navy: #1A1F36;
+      --accent: #8B1538;
+      --gold: #D4A843;
+      --light-bg: #F5F7FA;
+      --card-border: #E8ECF1;
+      --sub-text: #6B7280;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --max-w: 960px;
+    }
+
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+
+    /* ── HERO ──────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #2D1B4E 50%, var(--accent) 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 64px 24px 130px;
+      text-align: center;
+    }
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.1);
+      pointer-events: none;
+    }
+    .hero::before { width: 260px; height: 260px; top: -40px; right: -60px; }
+    .hero::after  { width: 180px; height: 180px; bottom: 20px; left: 5%; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.14);
+      border-radius: 100px;
+      padding: 6px 16px;
+      margin-bottom: 20px;
+    }
+    .hero-badge svg { flex-shrink: 0; }
+    .hero-badge span { color: #fff; font-size: 13px; font-weight: 600; }
+
+    .hero h1 { color: #fff; font-size: 44px; font-weight: 800; line-height: 1.15; margin-bottom: 8px; }
+    .hero .hero-sub { color: rgba(255,255,255,.88); font-size: 19px; margin-bottom: 4px; }
+    .hero .hero-desc { color: rgba(255,255,255,.65); font-size: 15px; max-width: 540px; margin: 0 auto; }
+
+    /* ── SEARCH FORM ──────────────────────────────── */
+    .search-card {
+      max-width: 820px;
+      margin: -96px auto 0;
+      position: relative;
+      z-index: 10;
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,.1);
+      padding: 24px;
+    }
+    .search-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+    .search-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      background: #F3F4F6;
+      color: #6B7280;
+      transition: .2s;
+    }
+    .search-tab.active { background: var(--navy); color: #fff; }
+    .search-tab svg { width: 16px; height: 16px; }
+
+    .search-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 12px;
+    }
+    .search-field {
+      border: 1px solid #E5E7EB;
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+    .search-field .label { font-size: 11px; color: #9CA3AF; margin-bottom: 2px; }
+    .search-field .value { font-size: 14px; font-weight: 500; color: var(--navy); }
+    .search-field .value.placeholder { color: #9CA3AF; }
+
+    .search-btn {
+      background: var(--wego-green);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: var(--radius);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .2s;
+    }
+    .search-btn:hover { background: var(--dark-green); }
+
+    /* ── KEY INFO STRIP ───────────────────────────── */
+    .info-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 40px;
+    }
+    .info-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      border: 1px solid var(--card-border);
+    }
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #EEF7ED;
+      color: var(--dark-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .info-card .info-label { font-size: 14px; font-weight: 700; color: var(--navy); }
+    .info-card .info-sub   { font-size: 12px; color: var(--sub-text); }
+
+    /* ── SECTION HEADERS ──────────────────────────── */
+    .section { margin-top: 56px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .section-header-left { display: flex; align-items: center; gap: 12px; }
+    .section-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-header h2 { font-size: 22px; font-weight: 800; }
+    .section-header .section-sub { font-size: 13px; color: var(--sub-text); margin-top: 2px; }
+    .section-link {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 13px; font-weight: 600; color: var(--wego-green);
+    }
+    .section-link:hover { text-decoration: underline; }
+
+    /* ── HOST CITIES ──────────────────────────────── */
+    .cities-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .city-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+      transition: box-shadow .2s;
+    }
+    .city-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    .city-img {
+      height: 108px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .city-img .flag { font-size: 38px; }
+    .city-tag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 100px;
+      letter-spacing: .5px;
+    }
+    .city-body { padding: 12px 14px; }
+    .city-name { font-size: 14px; font-weight: 700; }
+    .city-venue { font-size: 12px; color: var(--sub-text); margin-top: 2px; }
+    .city-cta {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--wego-green);
+      margin-top: 8px;
+    }
+
+    /* ── MENA TEAMS ───────────────────────────────── */
+    .mena-banner {
+      background: linear-gradient(135deg, var(--navy), #2D1B4E);
+      border-radius: var(--radius-lg);
+      padding: 40px 36px;
+    }
+    .mena-banner h2 { color: #fff; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .mena-banner .mena-sub { color: rgba(255,255,255,.6); font-size: 14px; margin-bottom: 24px; }
+    .teams-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+    .team-card {
+      background: rgba(255,255,255,.1);
+      border-radius: var(--radius);
+      padding: 16px 8px;
+      text-align: center;
+      transition: background .2s;
+    }
+    .team-card:hover { background: rgba(255,255,255,.18); }
+    .team-flag { font-size: 32px; margin-bottom: 6px; }
+    .team-name { color: #fff; font-size: 13px; font-weight: 700; }
+    .team-group { color: rgba(255,255,255,.55); font-size: 11px; margin-top: 2px; }
+    .mena-cta {
+      text-align: center;
+      margin-top: 24px;
+    }
+    .mena-cta button {
+      background: rgba(255,255,255,.14);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 28px;
+      border-radius: 100px;
+      transition: background .2s;
+    }
+    .mena-cta button:hover { background: rgba(255,255,255,.22); }
+
+    /* ── SCHEDULE TABLE ───────────────────────────── */
+    .schedule-table {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+    }
+    .schedule-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 14px 24px;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .schedule-row:last-child { border-bottom: none; }
+    .schedule-row.final { background: #FFFBEB; }
+    .schedule-phase { width: 120px; flex-shrink: 0; font-size: 14px; font-weight: 700; }
+    .schedule-row.final .schedule-phase { color: #B45309; }
+    .schedule-dates { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--sub-text); font-weight: 500; }
+    .schedule-detail { flex: 1; font-size: 13px; color: var(--sub-text); }
+    .schedule-matches { flex-shrink: 0; font-size: 12px; color: #9CA3AF; font-weight: 500; }
+
+    /* ── VISA GUIDES ──────────────────────────────── */
+    .visa-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .visa-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      padding: 24px;
+      transition: box-shadow .2s;
+    }
+    .visa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    .visa-flag { font-size: 32px; margin-bottom: 12px; }
+    .visa-country { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .visa-desc { font-size: 13px; color: var(--sub-text); line-height: 1.6; margin-bottom: 16px; }
+    .visa-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--wego-green);
+    }
+
+    /* ── ARTICLES GRID ────────────────────────────── */
+    .articles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .article-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      padding: 20px;
+      transition: box-shadow .2s;
+    }
+    .article-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    .article-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .article-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--light-bg); color: var(--sub-text);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .article-cat { font-size: 11px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: .6px; }
+    .article-title { font-size: 14px; font-weight: 700; line-height: 1.4; }
+    .article-card:hover .article-title { color: var(--wego-green); }
+    .article-cta { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--wego-green); margin-top: 12px; }
+
+    /* ── CTA BANNER ───────────────────────────────── */
+    .cta-banner {
+      background: #EEF7ED;
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .cta-banner h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .cta-banner p { font-size: 14px; color: var(--sub-text); max-width: 480px; margin: 0 auto 24px; }
+    .cta-buttons { display: flex; justify-content: center; gap: 12px; }
+    .btn-primary {
+      background: var(--wego-green);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: var(--radius);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .2s;
+    }
+    .btn-primary:hover { background: var(--dark-green); }
+    .btn-secondary {
+      background: #fff;
+      color: var(--navy);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: var(--radius);
+      border: 1px solid #E5E7EB;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color .2s;
+    }
+    .btn-secondary:hover { border-color: #D1D5DB; }
+
+    /* ── SVG ICON HELPER ──────────────────────────── */
+    .icon { display: inline-flex; vertical-align: middle; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-badge">
+    <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+    <span>11 June &ndash; 19 July 2026</span>
+  </div>
+  <h1>FIFA World Cup 2026</h1>
+  <p class="hero-sub">USA &middot; Mexico &middot; Canada</p>
+  <p class="hero-desc">Book flights and hotels to 16 host cities across 3 countries. The biggest World Cup ever &mdash; 48 teams, 104 matches.</p>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     SEARCH FORM
+     ════════════════════════════════════════════════════════════ -->
+<div class="search-card">
+  <div class="search-tabs">
+    <button class="search-tab active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2Z"/></svg>
+      Flights
+    </button>
+    <button class="search-tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>
+      Hotels
+    </button>
+  </div>
+  <div class="search-fields">
+    <div class="search-field">
+      <div class="label">From</div>
+      <div class="value">Your city</div>
+    </div>
+    <div class="search-field">
+      <div class="label">To</div>
+      <div class="value placeholder">Host city</div>
+    </div>
+    <div class="search-field">
+      <div class="label">Depart</div>
+      <div class="value placeholder">Select date</div>
+    </div>
+    <button class="search-btn">Search</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     KEY INFO STRIP
+     ════════════════════════════════════════════════════════════ -->
+<div class="container" style="margin-top:40px">
+  <div class="info-strip">
+    <div class="info-card">
+      <div class="info-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
       </div>
+      <div><div class="info-label">11 Jun – 19 Jul</div><div class="info-sub">39 days</div></div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      </div>
+      <div><div class="info-label">3 Countries</div><div class="info-sub">16 host cities</div></div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div><div class="info-label">48 Teams</div><div class="info-sub">12 groups</div></div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+      </div>
+      <div><div class="info-label">104 Matches</div><div class="info-sub">First expanded WC</div></div>
+    </div>
+  </div>
+</div>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-6 pt-16 pb-32 text-center">
-        <div className="inline-flex items-center gap-2 bg-white bg-opacity-15 rounded-full px-4 py-1.5 mb-6">
-          <Trophy size={16} color={COLORS.gold} />
-          <span className="text-white text-sm font-medium">
-            11 June - 19 July 2026
-          </span>
-        </div>
+<!-- ════════════════════════════════════════════════════════════
+     HOST CITIES
+     ════════════════════════════════════════════════════════════ -->
+<div class="container section">
+  <div class="section-header">
+    <div>
+      <h2>Host Cities</h2>
+      <p class="section-sub">16 cities across the USA, Mexico, and Canada</p>
+    </div>
+    <a href="#" class="section-link">View all 16 cities ›</a>
+  </div>
 
-        <h1 className="text-5xl font-bold text-white leading-tight mb-4">
-          FIFA World Cup 2026
-        </h1>
-        <p className="text-xl text-white text-opacity-90 mb-2">
-          USA &middot; Mexico &middot; Canada
-        </p>
-        <p className="text-base text-white text-opacity-70 max-w-2xl mx-auto">
-          Book flights and hotels to 16 host cities across 3 countries. The
-          biggest World Cup ever — 48 teams, 104 matches.
-        </p>
+  <div class="cities-grid">
+    <!-- NY/NJ -->
+    <div class="city-card">
+      <div class="city-img" style="background:linear-gradient(135deg,#00286822,#BF0A3033)">
+        <span class="flag">🇺🇸</span>
+        <span class="city-tag" style="background:#D4A843">FINAL</span>
+      </div>
+      <div class="city-body">
+        <div class="city-name">New York / New Jersey</div>
+        <div class="city-venue">MetLife Stadium</div>
+        <div class="city-cta">✈ Search flights</div>
       </div>
     </div>
-  );
-}
-
-// ─── SEARCH FORM (placeholder representation) ────────────────
-function SearchForm() {
-  const [tab, setTab] = useState("flights");
-  return (
-    <div className="max-w-4xl mx-auto px-6 -mt-20 relative z-20">
-      <div className="bg-white rounded-2xl shadow-xl p-6">
-        {/* Tabs */}
-        <div className="flex gap-1 mb-5">
-          {["flights", "hotels"].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-colors ${
-                tab === t
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {t === "flights" ? <Plane size={16} /> : <Hotel size={16} />}
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {/* Search fields */}
-        <div className="grid grid-cols-4 gap-3 mb-4">
-          <div className="border border-gray-200 rounded-xl p-3">
-            <div className="text-xs text-gray-400 mb-1">From</div>
-            <div className="text-sm font-medium text-gray-800">
-              Your city
-            </div>
-          </div>
-          <div className="border border-gray-200 rounded-xl p-3">
-            <div className="text-xs text-gray-400 mb-1">To</div>
-            <div className="text-sm font-medium text-gray-400">
-              Host city
-            </div>
-          </div>
-          <div className="border border-gray-200 rounded-xl p-3">
-            <div className="text-xs text-gray-400 mb-1">Depart</div>
-            <div className="text-sm font-medium text-gray-400">
-              Select date
-            </div>
-          </div>
-          <button
-            className="text-white font-semibold rounded-xl flex items-center justify-center gap-2 text-base"
-            style={{ backgroundColor: COLORS.wegoGreen }}
-          >
-            Search
-          </button>
-        </div>
+    <!-- Mexico City -->
+    <div class="city-card">
+      <div class="city-img" style="background:linear-gradient(135deg,#00684722,#CE112633)">
+        <span class="flag">🇲🇽</span>
+        <span class="city-tag" style="background:#8B1538">OPENING</span>
+      </div>
+      <div class="city-body">
+        <div class="city-name">Mexico City</div>
+        <div class="city-venue">Estadio Azteca</div>
+        <div class="city-cta">✈ Search flights</div>
       </div>
     </div>
-  );
-}
-
-// ─── KEY INFO STRIP ─────────────────────────────────────────
-function KeyInfoStrip() {
-  const items = [
-    { icon: <Calendar size={20} />, label: "11 Jun - 19 Jul", sub: "39 days" },
-    { icon: <Globe size={20} />, label: "3 Countries", sub: "16 cities" },
-    { icon: <Users size={20} />, label: "48 Teams", sub: "12 groups" },
-    { icon: <Trophy size={20} />, label: "104 Matches", sub: "First expanded WC" },
-  ];
-
-  return (
-    <div className="max-w-5xl mx-auto px-6 mt-10">
-      <div className="grid grid-cols-4 gap-4">
-        {items.map((item, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100"
-          >
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: "#EEF7ED", color: COLORS.darkGreen }}
-            >
-              {item.icon}
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-gray-900">
-                {item.label}
-              </div>
-              <div className="text-xs text-gray-500">{item.sub}</div>
-            </div>
-          </div>
-        ))}
+    <!-- Los Angeles -->
+    <div class="city-card">
+      <div class="city-img" style="background:linear-gradient(135deg,#00286822,#BF0A3033)">
+        <span class="flag">🇺🇸</span>
+      </div>
+      <div class="city-body">
+        <div class="city-name">Los Angeles</div>
+        <div class="city-venue">SoFi Stadium</div>
+        <div class="city-cta">✈ Search flights</div>
       </div>
     </div>
-  );
-}
-
-// ─── HOST CITIES SECTION ────────────────────────────────────
-function HostCitiesSection() {
-  const cities = [
-    { city: "New York / New Jersey", country: "USA", flag: "🇺🇸", tag: "FINAL", venue: "MetLife Stadium", tagColor: COLORS.gold },
-    { city: "Mexico City", country: "Mexico", flag: "🇲🇽", tag: "OPENING", venue: "Estadio Azteca", tagColor: COLORS.accent },
-    { city: "Los Angeles", country: "USA", flag: "🇺🇸", tag: null, venue: "SoFi Stadium" },
-    { city: "Miami", country: "USA", flag: "🇺🇸", tag: null, venue: "Hard Rock Stadium" },
-    { city: "Toronto", country: "Canada", flag: "🇨🇦", tag: null, venue: "BMO Field" },
-    { city: "Dallas", country: "USA", flag: "🇺🇸", tag: null, venue: "AT&T Stadium" },
-    { city: "Atlanta", country: "USA", flag: "🇺🇸", tag: null, venue: "Mercedes-Benz Stadium" },
-    { city: "Houston", country: "USA", flag: "🇺🇸", tag: null, venue: "NRG Stadium" },
-  ];
-
-  return (
-    <div className="max-w-5xl mx-auto px-6 mt-14">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Host Cities</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            16 cities across the USA, Mexico, and Canada
-          </p>
-        </div>
-        <button className="flex items-center gap-1 text-sm font-medium" style={{ color: COLORS.wegoGreen }}>
-          View all 16 cities <ChevronRight size={16} />
-        </button>
+    <!-- Miami -->
+    <div class="city-card">
+      <div class="city-img" style="background:linear-gradient(135deg,#00286822,#BF0A3033)">
+        <span class="flag">🇺🇸</span>
       </div>
-
-      <div className="grid grid-cols-4 gap-4">
-        {cities.map((c, i) => (
-          <div
-            key={i}
-            className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          >
-            {/* City image placeholder */}
-            <div
-              className="h-28 relative"
-              style={{
-                background: `linear-gradient(135deg, ${
-                  c.country === "Mexico"
-                    ? "#006847"
-                    : c.country === "Canada"
-                    ? "#FF0000"
-                    : "#002868"
-                }22, ${
-                  c.country === "Mexico"
-                    ? "#CE1126"
-                    : c.country === "Canada"
-                    ? "#FF0000"
-                    : "#BF0A30"
-                }33)`,
-              }}
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-4xl">{c.flag}</span>
-              </div>
-              {c.tag && (
-                <div
-                  className="absolute top-2 right-2 text-white text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: c.tagColor }}
-                >
-                  {c.tag}
-                </div>
-              )}
-            </div>
-            <div className="p-3">
-              <div className="font-semibold text-sm text-gray-900">
-                {c.city}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">{c.venue}</div>
-              <div className="flex items-center gap-1 mt-2 text-xs font-medium" style={{ color: COLORS.wegoGreen }}>
-                <Plane size={12} /> Search flights
-              </div>
-            </div>
-          </div>
-        ))}
+      <div class="city-body">
+        <div class="city-name">Miami</div>
+        <div class="city-venue">Hard Rock Stadium</div>
+        <div class="city-cta">✈ Search flights</div>
       </div>
     </div>
-  );
-}
-
-// ─── VISA GUIDE SECTION ─────────────────────────────────────
-function VisaGuideSection() {
-  const guides = [
-    {
-      country: "United States",
-      flag: "🇺🇸",
-      desc: "B1/B2 tourist visa or ESTA for eligible nationalities. Apply early — processing times are long.",
-      cta: "US Visa Guide",
-    },
-    {
-      country: "Canada",
-      flag: "🇨🇦",
-      desc: "eTA for visa-exempt nationalities, or visitor visa. Special FIFA fan provisions may apply.",
-      cta: "Canada Visa Guide",
-    },
-    {
-      country: "Mexico",
-      flag: "🇲🇽",
-      desc: "Tourist visa or visa-free entry for many nationalities. Check if you need a Forma Migratoria.",
-      cta: "Mexico Visa Guide",
-    },
-  ];
-
-  return (
-    <div className="max-w-5xl mx-auto px-6 mt-14">
-      <div className="flex items-center gap-3 mb-6">
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: "#FEF3E2", color: "#D97706" }}
-        >
-          <Shield size={20} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Visa Guides</h2>
-          <p className="text-sm text-gray-500">
-            Entry requirements for the 3 host countries
-          </p>
-        </div>
+    <!-- Toronto -->
+    <div class="city-card">
+      <div class="city-img" style="background:linear-gradient(135deg,#FF000022,#FF000033)">
+        <span class="flag">🇨🇦</span>
       </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        {guides.map((g, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="text-3xl mb-3">{g.flag}</div>
-            <h3 className="font-semibold text-gray-900 mb-2">{g.country}</h3>
-            <p className="text-sm text-gray-600 leading-relaxed mb-4">
-              {g.desc}
-            </p>
-            <button
-              className="flex items-center gap-1 text-sm font-medium"
-              style={{ color: COLORS.wegoGreen }}
-            >
-              {g.cta} <ArrowRight size={14} />
-            </button>
-          </div>
-        ))}
+      <div class="city-body">
+        <div class="city-name">Toronto</div>
+        <div class="city-venue">BMO Field</div>
+        <div class="city-cta">✈ Search flights</div>
       </div>
     </div>
-  );
-}
-
-// ─── KEY DATES / SCHEDULE OVERVIEW ──────────────────────────
-function ScheduleSection() {
-  const phases = [
-    {
-      phase: "Group Stage",
-      dates: "11 June - 29 June",
-      detail: "48 teams in 12 groups of 4. Top 2 + best 8 third-placed teams advance.",
-      matches: "72 matches",
-    },
-    {
-      phase: "Round of 32",
-      dates: "30 June - 3 July",
-      detail: "New knockout round introduced for the expanded 48-team format.",
-      matches: "16 matches",
-    },
-    {
-      phase: "Round of 16",
-      dates: "4 - 7 July",
-      detail: "The classic knockout stage begins. Single elimination.",
-      matches: "8 matches",
-    },
-    {
-      phase: "Quarter-Finals",
-      dates: "8 - 10 July",
-      detail: "The final 8 teams compete for a place in the semis.",
-      matches: "4 matches",
-    },
-    {
-      phase: "Semi-Finals",
-      dates: "13 - 14 July",
-      detail: "Penultimate stage at marquee US venues.",
-      matches: "2 matches",
-    },
-    {
-      phase: "Final",
-      dates: "19 July",
-      detail: "MetLife Stadium, New York / New Jersey.",
-      matches: "1 match",
-    },
-  ];
-
-  return (
-    <div className="max-w-5xl mx-auto px-6 mt-14">
-      <div className="flex items-center gap-3 mb-6">
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: "#EDE9FE", color: "#7C3AED" }}
-        >
-          <Clock size={20} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            Tournament Schedule
-          </h2>
-          <p className="text-sm text-gray-500">
-            104 matches over 39 days
-          </p>
-        </div>
+    <!-- Dallas -->
+    <div class="city-card">
+      <div class="city-img" style="background:linear-gradient(135deg,#00286822,#BF0A3033)">
+        <span class="flag">🇺🇸</span>
       </div>
-
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        {phases.map((p, i) => (
-          <div
-            key={i}
-            className={`flex items-center gap-6 px-6 py-4 ${
-              i < phases.length - 1 ? "border-b border-gray-100" : ""
-            } ${p.phase === "Final" ? "bg-amber-50" : ""}`}
-          >
-            <div className="w-28 shrink-0">
-              <div
-                className={`text-sm font-bold ${
-                  p.phase === "Final" ? "text-amber-700" : "text-gray-900"
-                }`}
-              >
-                {p.phase}
-              </div>
-            </div>
-            <div className="w-36 shrink-0 text-sm text-gray-600 font-medium">
-              {p.dates}
-            </div>
-            <div className="flex-1 text-sm text-gray-500">{p.detail}</div>
-            <div className="text-xs font-medium text-gray-400 shrink-0">
-              {p.matches}
-            </div>
-          </div>
-        ))}
+      <div class="city-body">
+        <div class="city-name">Dallas</div>
+        <div class="city-venue">AT&amp;T Stadium</div>
+        <div class="city-cta">✈ Search flights</div>
       </div>
     </div>
-  );
-}
-
-// ─── TRAVEL TIPS / ARTICLES SECTION ─────────────────────────
-function ArticlesSection() {
-  const articles = [
-    {
-      title: "World Cup 2026 Tickets: How to Buy, Prices & Tips",
-      category: "Tickets",
-      icon: <Ticket size={16} />,
-    },
-    {
-      title: "Best Hotels Near World Cup Stadiums",
-      category: "Hotels",
-      icon: <Hotel size={16} />,
-    },
-    {
-      title: "Getting Around: Flights Between Host Cities",
-      category: "Transport",
-      icon: <Plane size={16} />,
-    },
-    {
-      title: "World Cup Fan Zones & Where to Watch",
-      category: "Experience",
-      icon: <Star size={16} />,
-    },
-    {
-      title: "Travel Insurance for World Cup 2026",
-      category: "Planning",
-      icon: <Shield size={16} />,
-    },
-    {
-      title: "Complete Match Schedule & Group Fixtures",
-      category: "Schedule",
-      icon: <Calendar size={16} />,
-    },
-  ];
-
-  return (
-    <div className="max-w-5xl mx-auto px-6 mt-14">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            World Cup Travel Guides
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Everything you need to plan your World Cup trip
-          </p>
-        </div>
-        <button className="flex items-center gap-1 text-sm font-medium" style={{ color: COLORS.wegoGreen }}>
-          View all articles <ChevronRight size={16} />
-        </button>
+    <!-- Atlanta -->
+    <div class="city-card">
+      <div class="city-img" style="background:linear-gradient(135deg,#00286822,#BF0A3033)">
+        <span class="flag">🇺🇸</span>
       </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        {articles.map((a, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{
-                  backgroundColor: COLORS.lightGray,
-                  color: COLORS.subText,
-                }}
-              >
-                {a.icon}
-              </div>
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
-                {a.category}
-              </span>
-            </div>
-            <h3 className="font-semibold text-sm text-gray-900 group-hover:text-green-600 transition-colors leading-snug">
-              {a.title}
-            </h3>
-            <div className="flex items-center gap-1 mt-3 text-xs font-medium" style={{ color: COLORS.wegoGreen }}>
-              Read more <ArrowRight size={12} />
-            </div>
-          </div>
-        ))}
+      <div class="city-body">
+        <div class="city-name">Atlanta</div>
+        <div class="city-venue">Mercedes-Benz Stadium</div>
+        <div class="city-cta">✈ Search flights</div>
       </div>
     </div>
-  );
-}
-
-// ─── COUNTRIES PARTICIPATING (MENA Focus) ───────────────────
-function MENATeamsSection() {
-  const teams = [
-    { name: "Saudi Arabia", flag: "🇸🇦", group: "Group H" },
-    { name: "Qatar", flag: "🇶🇦", group: "Group A" },
-    { name: "Morocco", flag: "🇲🇦", group: "Group F" },
-    { name: "Egypt", flag: "🇪🇬", group: "Group I" },
-    { name: "Iran", flag: "🇮🇷", group: "Group B" },
-    { name: "Tunisia", flag: "🇹🇳", group: "Group K" },
-  ];
-
-  return (
-    <div className="max-w-5xl mx-auto px-6 mt-14">
-      <div
-        className="rounded-2xl p-8"
-        style={{
-          background: `linear-gradient(135deg, ${COLORS.navy}, #2D1B4E)`,
-        }}
-      >
-        <h2 className="text-2xl font-bold text-white mb-2">
-          MENA & South Asian Teams
-        </h2>
-        <p className="text-sm text-white text-opacity-70 mb-6">
-          Cheer for the home region — multiple teams from our markets have
-          qualified
-        </p>
-        <div className="grid grid-cols-6 gap-3">
-          {teams.map((t, i) => (
-            <div
-              key={i}
-              className="bg-white bg-opacity-10 rounded-xl p-4 text-center hover:bg-opacity-20 transition-colors cursor-pointer"
-            >
-              <div className="text-3xl mb-2">{t.flag}</div>
-              <div className="text-white text-sm font-semibold">{t.name}</div>
-              <div className="text-white text-opacity-60 text-xs mt-1">
-                {t.group}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 text-center">
-          <button className="bg-white bg-opacity-15 hover:bg-opacity-25 text-white text-sm font-medium px-6 py-2.5 rounded-full transition-colors">
-            Search flights for match days
-          </button>
-        </div>
+    <!-- Houston -->
+    <div class="city-card">
+      <div class="city-img" style="background:linear-gradient(135deg,#00286822,#BF0A3033)">
+        <span class="flag">🇺🇸</span>
+      </div>
+      <div class="city-body">
+        <div class="city-name">Houston</div>
+        <div class="city-venue">NRG Stadium</div>
+        <div class="city-cta">✈ Search flights</div>
       </div>
     </div>
-  );
-}
+  </div>
+</div>
 
-// ─── CTA BANNER ─────────────────────────────────────────────
-function CTABanner() {
-  return (
-    <div className="max-w-5xl mx-auto px-6 mt-14 mb-16">
-      <div
-        className="rounded-2xl p-8 text-center"
-        style={{ backgroundColor: "#EEF7ED" }}
-      >
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Start Planning Your World Cup Trip
-        </h2>
-        <p className="text-sm text-gray-600 mb-6 max-w-xl mx-auto">
-          Compare flights and hotels across hundreds of providers. Book early
-          for the best deals to the biggest sporting event of 2026.
-        </p>
-        <div className="flex justify-center gap-3">
-          <button
-            className="text-white font-semibold px-8 py-3 rounded-xl text-sm flex items-center gap-2"
-            style={{ backgroundColor: COLORS.wegoGreen }}
-          >
-            <Plane size={16} /> Search Flights
-          </button>
-          <button className="bg-white text-gray-800 font-semibold px-8 py-3 rounded-xl text-sm border border-gray-200 flex items-center gap-2">
-            <Hotel size={16} /> Search Hotels
-          </button>
-        </div>
+<!-- ════════════════════════════════════════════════════════════
+     MENA & SOUTH ASIAN TEAMS
+     ════════════════════════════════════════════════════════════ -->
+<div class="container section">
+  <div class="mena-banner">
+    <h2>MENA &amp; South Asian Teams</h2>
+    <p class="mena-sub">Cheer for the home region &mdash; multiple teams from our markets have qualified</p>
+    <div class="teams-grid">
+      <div class="team-card"><div class="team-flag">🇸🇦</div><div class="team-name">Saudi Arabia</div><div class="team-group">Group H</div></div>
+      <div class="team-card"><div class="team-flag">🇶🇦</div><div class="team-name">Qatar</div><div class="team-group">Group A</div></div>
+      <div class="team-card"><div class="team-flag">🇲🇦</div><div class="team-name">Morocco</div><div class="team-group">Group F</div></div>
+      <div class="team-card"><div class="team-flag">🇪🇬</div><div class="team-name">Egypt</div><div class="team-group">Group I</div></div>
+      <div class="team-card"><div class="team-flag">🇮🇷</div><div class="team-name">Iran</div><div class="team-group">Group B</div></div>
+      <div class="team-card"><div class="team-flag">🇹🇳</div><div class="team-name">Tunisia</div><div class="team-group">Group K</div></div>
+    </div>
+    <div class="mena-cta"><button>Search flights for match days</button></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     TOURNAMENT SCHEDULE
+     ════════════════════════════════════════════════════════════ -->
+<div class="container section">
+  <div class="section-header">
+    <div class="section-header-left">
+      <div class="section-icon" style="background:#EDE9FE;color:#7C3AED">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </div>
+      <div><h2>Tournament Schedule</h2><p class="section-sub">104 matches over 39 days</p></div>
     </div>
-  );
-}
+  </div>
 
-// ─── MAIN PAGE COMPONENT ────────────────────────────────────
-export default function WorldCupLandingPage() {
-  return (
-    <div style={{ backgroundColor: COLORS.lightGray, minHeight: "100vh" }}>
-      <HeroSection />
-      <SearchForm />
-      <KeyInfoStrip />
-      <HostCitiesSection />
-      <MENATeamsSection />
-      <ScheduleSection />
-      <VisaGuideSection />
-      <ArticlesSection />
-      <CTABanner />
+  <div class="schedule-table">
+    <div class="schedule-row">
+      <div class="schedule-phase">Group Stage</div>
+      <div class="schedule-dates">11 Jun – 29 Jun</div>
+      <div class="schedule-detail">48 teams in 12 groups of 4. Top 2 + best 8 third-placed teams advance.</div>
+      <div class="schedule-matches">72 matches</div>
     </div>
-  );
-}
+    <div class="schedule-row">
+      <div class="schedule-phase">Round of 32</div>
+      <div class="schedule-dates">30 Jun – 3 Jul</div>
+      <div class="schedule-detail">New knockout round introduced for the expanded 48-team format.</div>
+      <div class="schedule-matches">16 matches</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-phase">Round of 16</div>
+      <div class="schedule-dates">4 – 7 Jul</div>
+      <div class="schedule-detail">The classic knockout stage begins. Single elimination.</div>
+      <div class="schedule-matches">8 matches</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-phase">Quarter-Finals</div>
+      <div class="schedule-dates">8 – 10 Jul</div>
+      <div class="schedule-detail">The final 8 teams compete for a place in the semis.</div>
+      <div class="schedule-matches">4 matches</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-phase">Semi-Finals</div>
+      <div class="schedule-dates">13 – 14 Jul</div>
+      <div class="schedule-detail">Penultimate stage at marquee US venues.</div>
+      <div class="schedule-matches">2 matches</div>
+    </div>
+    <div class="schedule-row final">
+      <div class="schedule-phase">Final</div>
+      <div class="schedule-dates">19 July</div>
+      <div class="schedule-detail">MetLife Stadium, New York / New Jersey.</div>
+      <div class="schedule-matches">1 match</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     VISA GUIDES
+     ════════════════════════════════════════════════════════════ -->
+<div class="container section">
+  <div class="section-header">
+    <div class="section-header-left">
+      <div class="section-icon" style="background:#FEF3E2;color:#D97706">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+      </div>
+      <div><h2>Visa Guides</h2><p class="section-sub">Entry requirements for the 3 host countries</p></div>
+    </div>
+  </div>
+
+  <div class="visa-grid">
+    <div class="visa-card">
+      <div class="visa-flag">🇺🇸</div>
+      <div class="visa-country">United States</div>
+      <p class="visa-desc">B1/B2 tourist visa or ESTA for eligible nationalities. Apply early — processing times are long.</p>
+      <a href="#" class="visa-cta">US Visa Guide →</a>
+    </div>
+    <div class="visa-card">
+      <div class="visa-flag">🇨🇦</div>
+      <div class="visa-country">Canada</div>
+      <p class="visa-desc">eTA for visa-exempt nationalities, or visitor visa. Special FIFA fan provisions may apply.</p>
+      <a href="#" class="visa-cta">Canada Visa Guide →</a>
+    </div>
+    <div class="visa-card">
+      <div class="visa-flag">🇲🇽</div>
+      <div class="visa-country">Mexico</div>
+      <p class="visa-desc">Tourist visa or visa-free entry for many nationalities. Check if you need a Forma Migratoria.</p>
+      <a href="#" class="visa-cta">Mexico Visa Guide →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     TRAVEL GUIDES / ARTICLES
+     ════════════════════════════════════════════════════════════ -->
+<div class="container section">
+  <div class="section-header">
+    <div><h2>World Cup Travel Guides</h2><p class="section-sub">Everything you need to plan your World Cup trip</p></div>
+    <a href="#" class="section-link">View all articles ›</a>
+  </div>
+
+  <div class="articles-grid">
+    <a class="article-card" href="#">
+      <div class="article-meta">
+        <div class="article-icon">🎫</div>
+        <span class="article-cat">Tickets</span>
+      </div>
+      <div class="article-title">World Cup 2026 Tickets: How to Buy, Prices &amp; Tips</div>
+      <div class="article-cta">Read more →</div>
+    </a>
+    <a class="article-card" href="#">
+      <div class="article-meta">
+        <div class="article-icon">🏨</div>
+        <span class="article-cat">Hotels</span>
+      </div>
+      <div class="article-title">Best Hotels Near World Cup Stadiums</div>
+      <div class="article-cta">Read more →</div>
+    </a>
+    <a class="article-card" href="#">
+      <div class="article-meta">
+        <div class="article-icon">✈️</div>
+        <span class="article-cat">Transport</span>
+      </div>
+      <div class="article-title">Getting Around: Flights Between Host Cities</div>
+      <div class="article-cta">Read more →</div>
+    </a>
+    <a class="article-card" href="#">
+      <div class="article-meta">
+        <div class="article-icon">⚽</div>
+        <span class="article-cat">Experience</span>
+      </div>
+      <div class="article-title">World Cup Fan Zones &amp; Where to Watch</div>
+      <div class="article-cta">Read more →</div>
+    </a>
+    <a class="article-card" href="#">
+      <div class="article-meta">
+        <div class="article-icon">🛡️</div>
+        <span class="article-cat">Planning</span>
+      </div>
+      <div class="article-title">Travel Insurance for World Cup 2026</div>
+      <div class="article-cta">Read more →</div>
+    </a>
+    <a class="article-card" href="#">
+      <div class="article-meta">
+        <div class="article-icon">📅</div>
+        <span class="article-cat">Schedule</span>
+      </div>
+      <div class="article-title">Complete Match Schedule &amp; Group Fixtures</div>
+      <div class="article-cta">Read more →</div>
+    </a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     CTA BANNER
+     ════════════════════════════════════════════════════════════ -->
+<div class="container section">
+  <div class="cta-banner">
+    <h2>Start Planning Your World Cup Trip</h2>
+    <p>Compare flights and hotels across hundreds of providers. Book early for the best deals to the biggest sporting event of 2026.</p>
+    <div class="cta-buttons">
+      <button class="btn-primary">✈ Search Flights</button>
+      <button class="btn-secondary">🏨 Search Hotels</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
